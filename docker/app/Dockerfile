@@ -1,3 +1,5 @@
+# • Distribución: Debian 12 (Bookworm) (es la versión estable de Debian utilizada para las imágenes de PHP 8.2 recientes).
+# • Arquitectura típica: amd64 (para la mayoría de servidores y PCs Intel/AMD) o arm64 (para entornos como Apple Silicon / Raspberry Pi).
 FROM php:8.2-apache
 
 # habilitar la extensión de PDO con MySQL

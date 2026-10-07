@@ -1,0 +1,61 @@
+# Orquestar 2 contenedores
+# - app: PHP + Apache
+# - db: MySQL
+services:
+  #Contenedor de la aplicacion web
+  app:
+    build:
+      # Contruye la imagen usando el DockerFile custom de la app
+      context: .
+      dockerfile: docker/app/Dockerfile
+    container_name: crud_pdo_app
+    restart: unless-stopped
+    ports:
+      # Expone Apache (80 Interno) en APP_PORT del host
+      - "${APP_PORT:-8082}:80"
+    environment:
+      #La app de conecta con MySQL por nombre del servicio "db"
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE:-crud_pdo}
+      DB_USER: ${MYSQL_USER:-crud_user}
+      DB_PASS: ${MYSQL_PASSWORD:-crud_pass}
+      DB_CHARSET: utf8mb4
+    volumes:
+      # Monta el codigo fuente para el desaroolo local
+      - ./crud_pdo:/var/www/html
+    depends_on:
+      db:
+        # Esperar a que MySQL reporte que esta funcional o saludable
+        condition: service_healthy
+
+  #contenedor de base de datos
+  db:
+    image: mysql:8.0
+    container_name: crud_pdo_db
+    restart: unless-stopped
+    ports:
+      #publica el puerto Mysql al host
+      - "${DB_PORT:-3308}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-crud_pdo}
+      MYSQL_USER: ${MYSQL_USER:-crud_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-crud_pass}
+    volumes:
+      # percistencia de datos
+      - db_data:/var/lib/mysql
+      # script de SQL que se ejecutara solo al momento de inicia el volumen
+      - ./files/db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL","mysqladmin ping -h localhost -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 2s
+      retries: 10
+      start_period: 20s
+volumes:
+  # volumen nombrado para conservar ls DB entre reinicios
+  db_data:
+
+
+    

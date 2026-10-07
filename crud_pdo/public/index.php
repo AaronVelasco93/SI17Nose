@@ -6,7 +6,7 @@
     $consulta="SELECT id, nombre, email, created_at FROM alumnos ORDER BY  id DESC";
     $stm=$pdo->query($consulta);
     $alumnos = $stm->fetchAll();
-    echo $alumnos;
+    
 ?>
 <!DOCTYPE html>
 <html lang="en">
